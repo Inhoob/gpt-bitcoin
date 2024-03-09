@@ -9,10 +9,11 @@ from openai import OpenAI
 import schedule
 import time
 import discord
+from discord.ext import tasks
 
 # Setup
 BOT_TOKEN = os.getenv("BOT_TOKEN")
-CHANNEL_ID = os.getenv("CHANNEL_ID")
+CHANNEL_ID = int(os.getenv("CHANNEL_ID"))
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -259,6 +260,7 @@ def execute_sell():
     except Exception as e:
         print(f"Failed to execute sell order: {e}")
 
+@tasks.loop(hours=1)
 async def make_decision_and_execute():
     print("Making decision and executing...")
     data_json = fetch_and_prepare_data()
@@ -278,12 +280,11 @@ async def make_decision_and_execute():
             await channel.send(message)
     except Exception as e:
         print(f"Failed to parse the advice as JSON: {e}")
-discord_client.start(BOT_TOKEN) 
 
-if __name__ == "__main__":
-    make_decision_and_execute()
-    schedule.every().hour.at(":01").do(make_decision_and_execute)
 
-    while True:
-        schedule.run_pending()
-        time.sleep(1)
+@discord_client.event
+async def on_ready():
+    print(f"Logged in as {discord_client.user}")
+    make_decision_and_execute.start()
+
+discord_client.run(BOT_TOKEN)
