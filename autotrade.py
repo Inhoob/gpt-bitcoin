@@ -13,7 +13,10 @@ import discord
 # Setup
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 CHANNEL_ID = os.getenv("CHANNEL_ID")
-discord_client = discord.Client()
+
+intents = discord.Intents.default()
+intents.message_content = True
+discord_client = discord.Client(intents=intents)
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 upbit = pyupbit.Upbit(os.getenv("UPBIT_ACCESS_KEY"), os.getenv("UPBIT_SECRET_KEY"))
@@ -275,8 +278,7 @@ async def make_decision_and_execute():
             await channel.send(message)
     except Exception as e:
         print(f"Failed to parse the advice as JSON: {e}")
-
-discord_client.run(BOT_TOKEN)
+discord_client.start(BOT_TOKEN) 
 
 if __name__ == "__main__":
     make_decision_and_execute()
@@ -285,5 +287,3 @@ if __name__ == "__main__":
     while True:
         schedule.run_pending()
         time.sleep(1)
-
-  
