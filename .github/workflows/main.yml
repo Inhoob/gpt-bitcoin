@@ -23,16 +23,13 @@ jobs:
           ps aux | grep autotrade.py | awk '{print $2}' | xargs kill -9
 
       - name: Deploy to EC2
-        uses: ssh-actions/ssh-deploy@v1
+        uses: appleboy/ssh-action@master
         with:
-          ssh_host: ${{ secrets.EC2_HOST }}
-          ssh_user: ${{ secrets.EC2_USER }}
-          ssh_key: ${{ secrets.EC2_KEY }}
-          ssh_port: 22
-          target_dir: /home/ubuntu/project
-          source_dir: .
-          command: |
+          host: ${{ secrets.EC2_HOST }} #instance IP
+          username: ${{ secrets.EC2_USER }} # ubuntu id
+          key: ${{ secrets.EC2_KEY }} # ec2 instance pem key
+          script: |
             sudo systemctl stop autotrade.service
-            rm -rf /home/ubuntu/gpt-bitcoin/autotrade.py
-            cp -r /home/ubuntu/gpt-bitcoin/autotrade.py /home/ubuntu/gpt-bitcoin/
+            cd /home/ubuntu/gpt-bitcoin
+            git pull origin main
             sudo systemctl start autotrade.service
