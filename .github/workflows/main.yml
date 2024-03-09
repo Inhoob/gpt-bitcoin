@@ -20,7 +20,8 @@ jobs:
 
       - name: Kill existing process
         run: |
-          pkill -f autotrade.py
+          ps aux | grep autotrade.py
+          sudo pkill -f autotrade.py
 
       - name: Deploy to EC2
         uses: appleboy/ssh-action@master
