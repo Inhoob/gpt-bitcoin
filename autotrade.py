@@ -8,8 +8,13 @@ import json
 from openai import OpenAI
 import schedule
 import time
+import discord
 
 # Setup
+BOT_TOKEN = os.getenv("BOT_TOKEN")
+CHANNEL_ID = os.getenv("CHANNEL_ID")
+discord_client = discord.Client()
+
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 upbit = pyupbit.Upbit(os.getenv("UPBIT_ACCESS_KEY"), os.getenv("UPBIT_SECRET_KEY"))
 
@@ -251,7 +256,7 @@ def execute_sell():
     except Exception as e:
         print(f"Failed to execute sell order: {e}")
 
-def make_decision_and_execute():
+async def make_decision_and_execute():
     print("Making decision and executing...")
     data_json = fetch_and_prepare_data()
     advice = analyze_data_with_gpt4(data_json)
@@ -263,8 +268,15 @@ def make_decision_and_execute():
             execute_buy()
         elif decision.get('decision') == "sell":
             execute_sell()
+        
+        if discord_client.is_ready():
+            channel = discord_client.get_channel(CHANNEL_ID)
+            message = f"`\n{decision}\n`"
+            await channel.send(message)
     except Exception as e:
         print(f"Failed to parse the advice as JSON: {e}")
+
+discord_client.run(BOT_TOKEN)
 
 if __name__ == "__main__":
     make_decision_and_execute()
@@ -273,3 +285,5 @@ if __name__ == "__main__":
     while True:
         schedule.run_pending()
         time.sleep(1)
+
+  
