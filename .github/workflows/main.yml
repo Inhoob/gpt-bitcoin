@@ -33,4 +33,5 @@ jobs:
             sudo systemctl stop autotrade.service
             cd /home/ubuntu/gpt-bitcoin
             git pull origin main
+            pip3 install -r requirements.txt
             sudo systemctl start autotrade.service
