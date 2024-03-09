@@ -1,0 +1,38 @@
+name: Python Project Deployment
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
+
+      - name: Build and test
+        run: python3 -m unittest
+
+      - name: Kill existing process
+        run: |
+          ps aux | grep autotrade.py | awk '{print $2}' | xargs kill -9
+
+      - name: Deploy to EC2
+        uses: ssh-actions/ssh-deploy@v1
+        with:
+          ssh_host: ${{ secrets.EC2_HOST }}
+          ssh_user: ${{ secrets.EC2_USER }}
+          ssh_key: ${{ secrets.EC2_KEY }}
+          ssh_port: 22
+          target_dir: /home/ubuntu/project
+          source_dir: .
+          command: |
+            sudo systemctl stop autotrade.service
+            rm -rf /home/ubuntu/gpt-bitcoin/autotrade.py
+            cp -r /home/ubuntu/gpt-bitcoin/autotrade.py /home/ubuntu/gpt-bitcoin/
+            sudo systemctl start autotrade.service
