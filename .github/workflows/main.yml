@@ -20,7 +20,7 @@ jobs:
 
       - name: Kill existing process
         run: |
-          ps aux | grep autotrade.py | awk '{print $2}' | xargs kill -9
+          pkill -f autotrade.py
 
       - name: Deploy to EC2
         uses: appleboy/ssh-action@master
